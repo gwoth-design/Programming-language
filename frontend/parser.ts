@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-import { Stmt, Program, Expr, BinaryExpr, NumericLiteral, Identifier, NullLiteral } from "./ast.ts";
+import { Stmt, Program, Expr, BinaryExpr, NumericLiteral, Identifier, VarDecleration } from "./ast.ts";
 import {tokenize, Token, TokenType} from "./lexer.ts";
 
 export default class Parser{
@@ -44,7 +44,43 @@ export default class Parser{
     }
 
     private parse_stmt(): Stmt{
-        return this.parse_expr();
+        switch(this.at().type){
+            case TokenType.Let:
+
+
+            case TokenType.Const:
+                return this.parse_var_decleration();
+            
+            default:
+                return this.parse_expr();
+        }
+
+    }
+
+
+    parse_var_decleration(): Stmt {
+        const isConstant = this.eat().type == TokenType.Const;
+        const identifier = this.expect(TokenType.Identifier, "Expected identifier name following let | const keywords.",).value;
+
+        if(this.at().type == TokenType.SemiColon){
+            this.eat();
+            if(isConstant){
+                throw "Must assign value to constant. No value provided";
+            }
+
+            return { kind: "VarDecleration", identifier, constant: isConstant } as VarDecleration;
+        }
+
+        this.expect(TokenType.Equals, "Expected equals token following identifier in var decleration");
+        const decleration = { 
+            kind: "VarDecleration", 
+            value: this.parse_expr(), 
+            identifier,
+            constant: isConstant 
+        } as VarDecleration;
+        this.expect(TokenType.SemiColon, "variable delcaration must end with semicolon");
+
+        return decleration;
     }
 
     private parse_expr(): Expr{
@@ -93,9 +129,6 @@ export default class Parser{
                 return {kind: "Identifier", symbol: this.eat().value} as Identifier;
             case TokenType.Number:
                 return {kind: "NumericLiteral", value: parseFloat(this.eat().value),} as NumericLiteral;
-            case TokenType.Null:
-                   this.eat();
-                   return { kind: "NullLiteral", value: "null" } as NullLiteral;
                 
             case TokenType.OpenParen: {
                 this.eat();
