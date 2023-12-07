@@ -15,7 +15,7 @@ export enum TokenType{
 
 const KEYWORDS: Record<string, TokenType> = {
     let: TokenType.Let,
-    Const: TokenType.Const,
+    const: TokenType.Const,
 }
 
 export interface Token{
