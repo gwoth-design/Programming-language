@@ -12,6 +12,9 @@ export enum TokenType{
 
     BooleanStmt,
 
+    SingleComment, //Single line comment #
+    LongCommment, //multiline comment ~
+
     If,
     Equals, // =
     Comma, // ,
@@ -26,6 +29,7 @@ export enum TokenType{
     CloseSquareBracket, // ]
     BinaryOperator, // + - * / // % **
     BooleanOperator, // == != >= <=
+    EOL, //siginifies end of line. THIS IS MAINLY ONLY NEEDED FOR COMMENTS
     EOF, //signifies end of file
 }
 
@@ -83,7 +87,12 @@ export function tokenize (sourceCode: string): Token[]{
         else if(src[0] == "}"){
             tokens.push(token(src.shift(), TokenType.CloseBrakey));
         }
-
+        /*else if(src[0] == "#"){
+            tokens.push(token(src.shift(), TokenType.SingleComment));
+        }
+        else if(src[0] == "~"){
+            tokens.push(token(src.shift(), TokenType.LongCommment));
+        }*/
         else if(src[0] == "+" || src[0] == "-" || src[0] == "*" || src[0] == "/" || src[0] == "%"){
             tokens.push(token(src.shift(), TokenType.BinaryOperator));
         }
@@ -137,6 +146,9 @@ export function tokenize (sourceCode: string): Token[]{
                 }
             }
             else if(isskippable(src[0])){
+                /*if(src[0] == '\n'){
+                    tokens.push(token('\n', TokenType.EOL));
+                }*/
                 src.shift(); // skip the character
             }
             else if(isOp(src[0])){

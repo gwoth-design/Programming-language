@@ -2,7 +2,7 @@ import { Stmt } from "../frontend/ast.ts";
 import Environment from "./environment.ts";
 
 export type ValueType = 
-    |"null" 
+    | "null" 
     | "number" 
     | "boolean" 
     | "object" 

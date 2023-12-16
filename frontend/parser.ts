@@ -1,10 +1,10 @@
 // deno-lint-ignore-file no-explicit-any
-import Environment from "../runtime/environment.ts";
-import { evaluate } from "../runtime/interpreter.ts";
-import { Stmt, Program, Expr, BinaryExpr, NumericLiteral, Identifier, VarDecleration, AssignmentExpr, Property, ObjectLiteral, CallExpr, MemberExpr, FunctionDeclaration, BooleanExpr, IfStatement } from "./ast.ts";
+import { Stmt, Program, Expr, BinaryExpr, NumericLiteral, Identifier, VarDecleration, AssignmentExpr, Property, ObjectLiteral, CallExpr, MemberExpr, FunctionDeclaration, BooleanExpr, IfStatement, } from "./ast.ts";
 import {tokenize, Token, TokenType} from "./lexer.ts";
 
 export default class Parser{
+
+    public comment = 0; // set up a comment boolean to tell the parser whether or not to keep skipping over code
 
     private tokens: Token[] = [];
     private prevToken: Token[] = [];
@@ -344,6 +344,9 @@ export default class Parser{
 
 
     private parse_primary_expr(): Expr{
+        /*if(this.comment == 1 || this.comment == 2){
+            return {kind: "null"};
+        }*/
         const tk = this.at().type;
         //console.log(tk);
         switch(tk){
@@ -361,7 +364,22 @@ export default class Parser{
                 )
                 return value;
             }
-
+            /*case TokenType.SingleComment:
+                this.comment = 1;
+                return {kind: "comment"};
+            case TokenType.EOL:
+                if(this.comment != 2){
+                    this.comment = 0;
+                }
+                return {kind: "comment"};
+            case TokenType.LongCommment:
+                if(this.comment != 2){
+                    this.comment = 2;
+                }
+                else{
+                    this.comment = 0;
+                }
+                return {kind: "comment"};*/
             default:
                 console.error("Unexspected token found during parsing!", this.at())
                 Deno.exit(1);

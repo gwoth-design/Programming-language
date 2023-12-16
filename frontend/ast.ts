@@ -16,6 +16,8 @@ export type NodeType =
     | "Identifier" 
     | "BooleanExpr"
     | "IfStatement"
+    | "comment"
+    | "null"
     | "BinaryExpr";
 
 
@@ -102,4 +104,12 @@ export interface IfStatement extends Stmt{
     kind: "IfStatement"
     expressions: BooleanExpr[];
     body: Stmt[];
+}
+
+export interface comment extends Stmt{
+    kind: "comment";
+}
+
+export interface NULL extends Stmt{
+    kind: "null";
 }
