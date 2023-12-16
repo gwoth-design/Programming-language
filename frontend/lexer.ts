@@ -2,28 +2,39 @@
 export enum TokenType{
     Number, 
     Identifier,
+
     Let,
     Const,
+    Fn,
+
     String, 
+    Character,
+
+    BooleanStmt,
+
+    If,
     Equals, // =
     Comma, // ,
     Dot,
     Colon, // :
-    SemiColon, // ;
-    OpenParen,  // (
-    CloseParen, // )
-    OpenBrace, // {
-    CloseBrace, // }
-    OpenBracket, // [
-    CloseBracket, // ]
+    Semicolon, // ;
+    OpenBracket,  // (
+    CloseBracket, // )
+    OpenBrakey, // {
+    CloseBrakey, // }
+    OpenSquareBracket, // [
+    CloseSquareBracket, // ]
     BinaryOperator, // + - * / // % **
+    BooleanOperator, // == != >= <=
     EOF, //signifies end of file
 }
 
 const KEYWORDS: Record<string, TokenType> = {
     let: TokenType.Let,
     const: TokenType.Const,
-}
+    fn: TokenType.Fn,
+    if: TokenType.If,
+};
 
 export interface Token{
     value: string,
@@ -42,6 +53,10 @@ function isskippable (str: string){
     return str == ' ' || str == '\n' || str == '\t' || str == "\r";
 }
 
+function isOp (str: string){
+    return str == "!" || str == "=" || str == ">" || str == "<" || str == "==";
+}
+
 function isint(str: string){
     const c = str.charCodeAt(0);
     const bounds = ['0'.charCodeAt(0), '9'.charCodeAt(0)];
@@ -55,28 +70,28 @@ export function tokenize (sourceCode: string): Token[]{
     //continue reading and making tokens until the end of the file
     while (src.length > 0){
         if(src[0] == "("){
-            tokens.push(token(src.shift(), TokenType.OpenParen));
+            tokens.push(token(src.shift(), TokenType.OpenBracket));
         }
         else if(src[0] == ")"){
-            tokens.push(token(src.shift(), TokenType.CloseParen));
+            tokens.push(token(src.shift(), TokenType.CloseBracket));
         }
 
         else if(src[0] == "{"){
-            tokens.push(token(src.shift(), TokenType.OpenBrace));
+            tokens.push(token(src.shift(), TokenType.OpenBrakey));
         }
 
         else if(src[0] == "}"){
-            tokens.push(token(src.shift(), TokenType.CloseBrace));
+            tokens.push(token(src.shift(), TokenType.CloseBrakey));
         }
 
         else if(src[0] == "+" || src[0] == "-" || src[0] == "*" || src[0] == "/" || src[0] == "%"){
             tokens.push(token(src.shift(), TokenType.BinaryOperator));
         }
-        else if(src[0] == "="){
+        else if(src[0] == "=" && src[1] != "="){
             tokens.push(token(src.shift(), TokenType.Equals));
         }
         else if(src[0] == ";"){
-            tokens.push(token(src.shift(), TokenType.SemiColon));
+            tokens.push(token(src.shift(), TokenType.Semicolon));
         }
         else if(src[0] == ":"){
             tokens.push(token(src.shift(), TokenType.Colon));
@@ -88,10 +103,10 @@ export function tokenize (sourceCode: string): Token[]{
             tokens.push(token(src.shift(), TokenType.Dot));
         }
         else if(src[0] == "["){
-            tokens.push(token(src.shift(), TokenType.OpenBracket));
+            tokens.push(token(src.shift(), TokenType.OpenSquareBracket));
         }
         else if(src[0] == "]"){
-            tokens.push(token(src.shift(), TokenType.CloseBracket));
+            tokens.push(token(src.shift(), TokenType.CloseSquareBracket));
         }
         else{
             //this handles all multicharacter tokens
@@ -111,7 +126,9 @@ export function tokenize (sourceCode: string): Token[]{
                 }
 
                 //check if is a reserved keyword
+                //console.log(ident);
                 const reserved = KEYWORDS[ident]
+                //console.log(typeof reserved + " " + ident);
                 if(typeof reserved == "number"){
                     tokens.push(token(ident, reserved));
                 }
@@ -122,13 +139,22 @@ export function tokenize (sourceCode: string): Token[]{
             else if(isskippable(src[0])){
                 src.shift(); // skip the character
             }
+            else if(isOp(src[0])){
+                let op = ""
+                while(src.length > 0 && isOp(src[0])){
+                    op += src.shift();
+                }
+                tokens.push(token(op, TokenType.BooleanOperator));
+                //console.log(op);
+            }
             else{
                 console.log("Unrecognised character found in source: ", src[0]);
                 Deno.exit(1);
             }
         }
     }
-    tokens.push({type: TokenType.EOF, value: "EndOfFile"});
+    tokens.push({value: "EndOfFile", type: TokenType.EOF});
+    //console.log(tokens)
     return tokens;
 }
 

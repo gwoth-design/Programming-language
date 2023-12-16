@@ -1,7 +1,7 @@
-import { AssignmentExpr, BinaryExpr, Identifier, ObjectLiteral } from "../../frontend/ast.ts";
+import { AssignmentExpr, BinaryExpr, BooleanExpr, CallExpr, Identifier, ObjectLiteral, Stmt } from "../../frontend/ast.ts";
 import Environment from "../environment.ts";
 import { evaluate } from "../interpreter.ts";
-import { MK_NULL, NumberVal, ObjectVal, RuntimeVal } from "../values.ts";
+import { BooleanVal, FunctionValue, MK_NULL, NativeFnValue, NumberVal, ObjectVal, RuntimeVal } from "../values.ts";
 
 function eval_numeric_binary_expr(lhs: NumberVal, rhs: NumberVal, operator: string): NumberVal{
     let result: number;
@@ -17,11 +17,53 @@ function eval_numeric_binary_expr(lhs: NumberVal, rhs: NumberVal, operator: stri
     else if(operator == "/"){
         result = lhs.value / rhs.value;
     }
-    else{ //NOTE COULD CAUSE PROBLEMS
+    else if(operator == "%"){ 
         result = lhs.value % rhs.value;
+    }
+    else if(operator == "//"){ //for now isnt actually floor division
+        result = Math.floor(lhs.value / rhs.value);
+    }
+
+    else{
+        result = 0;
     }
 
     return { value: result, type: "number"};
+}
+
+function eval_all_boolean_expr(lhs: NumberVal, rhs: NumberVal, operator: string): BooleanVal{
+    let result = true;
+
+    if(operator == ">"){
+        result = lhs.value > rhs.value;
+    }
+    else if(operator == "<"){
+        result = lhs.value < rhs.value;
+    }
+    else if(operator == ">="){
+        result = lhs.value >= rhs.value;
+    }
+    else if(operator == "<="){
+        result = lhs.value <= rhs.value;
+    }
+    else if(operator == "!="){
+        result = lhs.value != rhs.value;
+    }
+    else if(operator == "=="){
+        result = lhs.value == rhs.value;
+    }
+    else if(operator == "!"){
+        result = lhs.value != rhs.value;
+    }
+
+    return { value: result, type: "boolean"};
+}
+
+export function eval_boolean_expr(boolop: BooleanExpr, env: Environment): RuntimeVal{
+    const lhs = evaluate(boolop.left, env);
+    const rhs = evaluate(boolop.right, env);
+
+    return eval_all_boolean_expr(lhs as NumberVal, rhs as NumberVal, boolop.boolop);
 }
 
 export function eval_binary_expr(binop: BinaryExpr, env: Environment): RuntimeVal{
@@ -45,7 +87,12 @@ export function eval_assignment (node: AssignmentExpr, env: Environment): Runtim
         throw `Invalid LHS inside assignment expression ${JSON.stringify(node.assigne)}`;
     }
     const varname = (node.assigne as Identifier).symbol;
-    return env.assignVar(varname, evaluate(node.value, env));
+    const nodeValue = node.value; // Assuming node.value is of type 'Expr | undefined'
+    if (nodeValue) {
+    return env.assignVar(varname, evaluate(nodeValue, env));
+    } else {
+        return MK_NULL();
+    }
 }
 
 export function eval_object_expr (obj: ObjectLiteral, env: Environment): RuntimeVal{
@@ -56,5 +103,37 @@ export function eval_object_expr (obj: ObjectLiteral, env: Environment): Runtime
         object.properties.set(key, runtimeVal);
     }
     return object;
+
+}
+export function eval_call_expr (expr: CallExpr, env: Environment): RuntimeVal{
+
+    const args = expr.args.map((arg) => evaluate(arg, env));
+    const fn = evaluate(expr.caller, env);
+
+    if(fn.type == "native-fn"){
+        const result = (fn as NativeFnValue).call(args, env);
+        return result;
+    }
+    if (fn.type == "function"){
+        const func = fn as FunctionValue;
+        const scope = new Environment(func.declarationEnv);
+
+        for (let i = 0; i < func.parameters.length; i++){
+            //TODO check the bounds here
+            //verify there are enough paramateres and arguments
+            const varname = func.parameters[i];
+            scope.declareVar(varname, args[i], false);
+        }
+
+
+        let result: RuntimeVal = MK_NULL();
+        //evalueate function body stmt bt stmt
+        for(const stmt of func.body){
+            result = evaluate(stmt, scope);
+        }
+
+        return result;
+    }
+    throw "Cannot call value that is not a function: " + JSON.stringify(fn);
 
 }

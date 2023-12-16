@@ -1,11 +1,10 @@
-import { MK_BOOL, MK_NULL, RuntimeVal } from "./values.ts";
+import { createGlobalEnv } from "./NativeFunctions.ts";
+import { MK_BOOL, MK_NATIVE_FN, MK_NULL, MK_NUMBER, RuntimeVal } from "./values.ts";
 
-export function createGlobalEnv(){
-    const env = new Environment();
-    env.declareVar("true", MK_BOOL(true), true);
-    env.declareVar("false", MK_BOOL(false), true);
-    env.declareVar("null", MK_NULL(), true);
 
+export function CreateGlobalEnv(){
+    //calls native enviroinemnt caller to make for all native stuff :)
+    const env = createGlobalEnv();
     return env;
 }
 

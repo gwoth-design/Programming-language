@@ -1,0 +1,4 @@
+Run main.ts without compile: deno run -A main.ts
+Compile main.ts: deno compile --allow-read --output=luminaLang main.ts 
+Compile the cpp runner program: g++ execute.cpp -o Lumina
+Run the executable: Lumina.exe code/test.lum

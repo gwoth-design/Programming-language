@@ -3,6 +3,7 @@ export type NodeType =
     //STATEMENTS
     | "Program" 
     | "VarDecleration"
+    | "FunctionDeclaration"
 
     //EXPRESSIONS
     | "AssignmentExpr"
@@ -13,6 +14,8 @@ export type NodeType =
     | "ObjectLiteral"
     | "NumericLiteral" 
     | "Identifier" 
+    | "BooleanExpr"
+    | "IfStatement"
     | "BinaryExpr";
 
 
@@ -21,62 +24,82 @@ export interface Stmt {
 }
 
 export interface AssignmentExpr extends Expr{
-    kind: "AssignmentExpr",
-    assigne: Expr,
+    kind: "AssignmentExpr";
+    assigne: Expr;
     value?: Expr;
 }
 
 export interface Program extends Stmt{
-    kind: "Program",
+    kind: "Program";
     body: Stmt[];
 }
 
 export interface VarDecleration extends Stmt{
-    kind: "VarDecleration",
-    constant: boolean,
-    identifier: string,
+    kind: "VarDecleration";
+    constant: boolean;
+    identifier: string;
     value?: Expr;
+}
+
+export interface FunctionDeclaration extends Stmt{
+    kind: "FunctionDeclaration";
+    parameters: string[];
+    name: string;
+    body: Stmt[];
 }
 
 export interface Expr extends Stmt {}
 
 export interface BinaryExpr extends Expr{
     kind: "BinaryExpr"
-    left: Expr,
-    right: Expr,
+    left: Expr;
+    right: Expr;
     operator: string;
 }
 
 export interface Identifier extends Expr{
-    kind: "Identifier",
+    kind: "Identifier";
     symbol: string;
 }
 
 export interface NumericLiteral extends Expr{
-    kind: "NumericLiteral",
+    kind: "NumericLiteral";
     value: number;
 }
 
 export interface Property extends Expr{
-    kind: "Property",
-    key: string, 
+    kind: "Property";
+    key: string; 
     value?: Expr;
 }
 
 export interface ObjectLiteral extends Expr{
-    kind: "ObjectLiteral",
+    kind: "ObjectLiteral";
     properties: Property[];
 }
 
 export interface CallExpr extends Expr{
     kind: "CallExpr"
-    args: Expr[],
-    caller: Expr,
+    args: Expr[];
+    caller: Expr;
 }
 
 export interface MemberExpr extends Expr{
     kind: "MemberExpr"
-    object: Expr,
-    property: Expr,
+    object: Expr;
+    property: Expr;
     computed: boolean;
+}
+
+export interface BooleanExpr extends Expr{
+    kind: "BooleanExpr";
+    left: Expr;
+    right: Expr;
+    boolop: string;
+}
+
+export interface IfStatement extends Stmt{
+    kind: "IfStatement"
+    expressions: BooleanExpr[];
+    body: Stmt[];
 }
