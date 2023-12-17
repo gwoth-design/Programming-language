@@ -18,6 +18,7 @@ export type NodeType =
     | "IfStatement"
     | "comment"
     | "null"
+    | "AssignmentExprString"
     | "BinaryExpr";
 
 
@@ -29,6 +30,13 @@ export interface AssignmentExpr extends Expr{
     kind: "AssignmentExpr";
     assigne: Expr;
     value?: Expr;
+}
+
+export interface VarDeclerationString extends Expr{
+    kind: "AssignmentExprString";
+    assigne: string;
+    value?: string;
+    constant: boolean;
 }
 
 export interface Program extends Stmt{
@@ -104,6 +112,11 @@ export interface IfStatement extends Stmt{
     kind: "IfStatement"
     expressions: BooleanExpr[];
     body: Stmt[];
+    do: boolean;
+    while: boolean;
+    else: boolean;
+    elif: boolean;
+    bodyElse: Stmt[];
 }
 
 export interface comment extends Stmt{

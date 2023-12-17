@@ -1,4 +1,4 @@
-import { BooleanExpr, Expr, FunctionDeclaration, IfStatement, Program, Stmt, VarDecleration } from "../../frontend/ast.ts";
+import { BooleanExpr, FunctionDeclaration, IfStatement, Program, Stmt, VarDecleration } from "../../frontend/ast.ts";
 import Environment from "../environment.ts";
 import { evaluate } from "../interpreter.ts";
 import { BooleanVal, FunctionValue, MK_NULL, RuntimeVal } from "../values.ts";
@@ -32,7 +32,7 @@ export function eval_function_decleration(declaration: FunctionDeclaration, env:
 }
 
 export function eval_if_statement(statement: IfStatement, env: Environment): RuntimeVal{
-    let ExprVal: boolean = false;
+    let ExprVal = false;
     for(let i = 0; i < statement.expressions.length; i++){
         ExprVal = (eval_boolean_expr(statement.expressions[i] as BooleanExpr, env) as BooleanVal).value;
     }
@@ -42,9 +42,18 @@ export function eval_if_statement(statement: IfStatement, env: Environment): Run
             bodyLine = statement.body[i];
             evaluate(bodyLine, env);
         }
+        if(statement.while){
+            eval_if_statement(statement, env);
+        }
     }
     else{
-        //CHECK FOR ELSE IF OR ELSE STATEMENT
+        if(statement.do){
+            for(let i = 0; i < statement.body.length; i++){
+                bodyLine = statement.body[i];
+                evaluate(bodyLine, env);
+            }
+        }
+        
     }
 
     return MK_NULL();

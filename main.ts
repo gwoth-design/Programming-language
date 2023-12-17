@@ -1,3 +1,4 @@
+// deno-lint-ignore-file
 import Parser from "./frontend/parser.ts";
 import { CreateGlobalEnv } from "./runtime/environment.ts";
 import { evaluate } from "./runtime/interpreter.ts";
@@ -19,8 +20,8 @@ try {
 
 const fileName = "./code/test.lum";
 //run("./test.lum");
-run(fileName); //takes input file
-//repl();
+//run(fileName); //takes input file
+repl();
 
 function repl(){
     const parser = new Parser();

@@ -5,6 +5,7 @@ export type ValueType =
     | "null" 
     | "number" 
     | "boolean" 
+    | "string"
     | "object" 
     | "native-fn"
     | "function";
@@ -27,10 +28,18 @@ export interface BooleanVal extends RuntimeVal{
     value: boolean;
 }
 
+export interface StringVal extends RuntimeVal{
+    type: "string",
+    value: string;
+}
+
 export function MK_BOOL(b = true){
     return { type: "boolean", value: b} as BooleanVal;
 }
 
+export function MK_STRING(s = ""){
+    return {type: "string", value: s} as StringVal;
+}
 export interface NumberVal extends RuntimeVal{
     type: "number",
     value: number;

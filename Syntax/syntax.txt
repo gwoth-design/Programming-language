@@ -1,0 +1,20 @@
+while loop: 
+while(x > y){
+    //block of code here
+}
+
+do while loop:
+do while(x > y){
+    //block of code here
+}
+
+if statement:
+if(x > y){
+    //block of code here
+}
+elif(x > y){
+
+}
+else{
+    //block of code here
+}

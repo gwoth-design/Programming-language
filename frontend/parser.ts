@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-import { Stmt, Program, Expr, BinaryExpr, NumericLiteral, Identifier, VarDecleration, AssignmentExpr, Property, ObjectLiteral, CallExpr, MemberExpr, FunctionDeclaration, BooleanExpr, IfStatement, } from "./ast.ts";
+import { Stmt, Program, Expr, BinaryExpr, NumericLiteral, Identifier, VarDecleration, AssignmentExpr, Property, ObjectLiteral, CallExpr, MemberExpr, FunctionDeclaration, BooleanExpr, IfStatement, VarDeclerationString, } from "./ast.ts";
 import {tokenize, Token, TokenType} from "./lexer.ts";
 
 export default class Parser{
@@ -53,6 +53,7 @@ export default class Parser{
         
         return program;
     }
+    //WHERE ALL THE INBUITL KEYWORDS ARE
 
     private parse_stmt(): Stmt{
         switch(this.at().type){
@@ -63,11 +64,20 @@ export default class Parser{
                 return this.parse_fn_declaration();
             case TokenType.If:
                 return this.parse_if_statement();
+            case TokenType.While:
+                return this.parse_if_statement(true);
+            case TokenType.Do:
+                return this.parse_if_statement(true, true);
+            case TokenType.Else:
+                return this.parse_if_statement(false, false, true, false);
+            case TokenType.Elif:
+                return this.parse_if_statement(false, false, false, true);
             default:
                 return this.parse_expr();
         }
 
     }
+
     parse_fn_declaration(): Stmt {
       this.eat(); //eat fn keyword
       const name = this.expect(TokenType.Identifier, "Expected function name folowing fn keyword").value;
@@ -101,16 +111,25 @@ export default class Parser{
     }
 
     //IF STMT
-    parse_if_statement(): Stmt{ //TODO Make sure that the expressions array can be added more than one seperated via a boolean if operator
-        this.eat(); //eat if keyword
+    parse_if_statement(isWhile = false, isDo = false, isElse = false, isElif = false): Stmt{ //TODO Make sure that the expressions array can be added more than one seperated via a boolean if operator
+        if(isDo){//checks if a do while so skips both tokens
+            this.eat(); //eat do keyword
+            this.eat(); //eat while keyword
+        }
+        else{
+            this.eat(); //eat if/while/do keyword
+        }
+
+
         const exprs = this.parse_If_stmt() as BooleanExpr[]; //list of all the expressions
         const stmts: BooleanExpr[] = [];
   
         for (const expr of exprs){
             stmts.push(expr)
         }
+        let If = {} as IfStatement; // init the ifstatement struct type to be edited
 
-        this.expect(TokenType.OpenBrakey, "Expected function body following declaration");
+        this.expect(TokenType.OpenBrakey, "Expected function body following declaration"); //checkl first body
   
         const body: Stmt[] = [];
   
@@ -118,10 +137,32 @@ export default class Parser{
           body.push(this.parse_stmt());
         }
   
-        this.expect(TokenType.CloseBrakey, "Closing brace exprected inside function declaration");
-        const If = {
-            kind: "IfStatement", expressions: stmts, body,
+        this.expect(TokenType.CloseBrakey, "Closing brace exprected inside function declaration"); //end of first body
+
+        If = {
+            kind: "IfStatement", expressions: stmts, body, do: isDo, while: isWhile, else: isElse, elif: isElif
         } as IfStatement;
+
+        /*if(isElse){
+            this.expect(TokenType.OpenBrakey, "Expected function body following declaration");
+  
+            const body: Stmt[] = [];
+    
+            while(this.at().type !== TokenType.EOF && this.at().type !== TokenType.CloseBrakey){
+            body.push(this.parse_stmt());
+            }
+    
+            this.expect(TokenType.CloseBrakey, "Closing brace exprected inside function declaration");
+            If = {
+                kind: "IfStatement", expressions: stmts, body, do: isDo, while: isWhile, else: isElse, elif: isElif, bodyElse: body,
+            } as IfStatement;
+        }
+        else if(isElif){
+            do()=>{
+                console.log("is else if");
+                //do rest of elif checks
+            };while("so and so checkuing wearther next statemtn is another elif")
+        }*/
   
         //console.log(If);
         return If;
@@ -174,14 +215,25 @@ export default class Parser{
         return this.parse_assignment_expr();
     }
     private parse_assignment_expr(): Expr {
-        const left = this.parse_boolean_expr();
 
+        if(this.at().type == TokenType.SpeachMarks){
+            this.eat()
+            if(this.at().type != TokenType.Semicolon){
+                const value = this.at().value;
+                //console.log(value);
+                this.eat()
+                this.expect(TokenType.SpeachMarks, "Speach marks required after string to close it");
+                return {assigne: value, kind: "AssignmentExprString", value} as VarDeclerationString;
+            }
+        }
+
+
+        const left = this.parse_boolean_expr();
         if(this.at().type == TokenType.Equals){
             this.eat();
             const value = this.parse_boolean_expr();
             return {assigne: left, kind: "AssignmentExpr", value} as AssignmentExpr;
         }
-
         return left;
     }
 
@@ -361,6 +413,15 @@ export default class Parser{
                 this.expect(
                     TokenType.CloseBracket,
                     "Unexspected token found inside parenthasised expression. Expected closing parenthesis.",
+                )
+                return value;
+            }
+            case TokenType.SpeachMarks: {
+                this.eat();
+                const value = this.parse_expr();
+                this.expect(
+                    TokenType.SpeachMarks,
+                    "expected closing speech marks"
                 )
                 return value;
             }

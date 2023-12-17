@@ -15,7 +15,15 @@ export enum TokenType{
     SingleComment, //Single line comment #
     LongCommment, //multiline comment ~
 
+    Do,
+    While,
+
     If,
+    Else,
+    Elif,
+
+    SpeachMarks,
+
     Equals, // =
     Comma, // ,
     Dot,
@@ -38,6 +46,10 @@ const KEYWORDS: Record<string, TokenType> = {
     const: TokenType.Const,
     fn: TokenType.Fn,
     if: TokenType.If,
+    do: TokenType.Do,
+    while: TokenType.While,
+    else: TokenType.Else,
+    elif: TokenType.Elif,
 };
 
 export interface Token{
@@ -116,6 +128,9 @@ export function tokenize (sourceCode: string): Token[]{
         }
         else if(src[0] == "]"){
             tokens.push(token(src.shift(), TokenType.CloseSquareBracket));
+        }
+        else if(src[0] == '"'){
+            tokens.push(token(src.shift(), TokenType.SpeachMarks));
         }
         else{
             //this handles all multicharacter tokens

@@ -1,7 +1,7 @@
-import { AssignmentExpr, BinaryExpr, BooleanExpr, CallExpr, Identifier, ObjectLiteral, Stmt } from "../../frontend/ast.ts";
+import { AssignmentExpr, BinaryExpr, BooleanExpr, CallExpr, Identifier, ObjectLiteral, VarDeclerationString } from "../../frontend/ast.ts";
 import Environment from "../environment.ts";
 import { evaluate } from "../interpreter.ts";
-import { BooleanVal, FunctionValue, MK_NULL, NativeFnValue, NumberVal, ObjectVal, RuntimeVal } from "../values.ts";
+import { BooleanVal, FunctionValue, MK_NULL, NativeFnValue, NumberVal, ObjectVal, RuntimeVal, ValueType } from "../values.ts";
 
 function eval_numeric_binary_expr(lhs: NumberVal, rhs: NumberVal, operator: string): NumberVal{
     let result: number;
@@ -90,6 +90,17 @@ export function eval_assignment (node: AssignmentExpr, env: Environment): Runtim
     const nodeValue = node.value; // Assuming node.value is of type 'Expr | undefined'
     if (nodeValue) {
     return env.assignVar(varname, evaluate(nodeValue, env));
+    } else {
+        return MK_NULL();
+    }
+}
+
+
+export function eval_assignment_string(node: VarDeclerationString, env: Environment): RuntimeVal{
+    const varname = node.assigne;
+    const nodeValue = node.value; // Assuming node.value is of type 'Expr | undefined'
+    if (nodeValue) {
+        return env.declareVar(varname, {type: nodeValue as ValueType}, node.constant);
     } else {
         return MK_NULL();
     }
