@@ -19,9 +19,8 @@ try {
 }*/
 
 const fileName = "./code/test.lum";
-//run("./test.lum");
-//run(fileName); //takes input file
-repl();
+run(fileName); //takes input file
+//repl();
 
 function repl(){
     const parser = new Parser();
@@ -36,7 +35,7 @@ function repl(){
         }
 
         const program = parser.produceAST(input);
-
+        //console.log(program);
         const result = evaluate(program, env);
         console.log(result);
     }

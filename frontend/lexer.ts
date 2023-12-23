@@ -24,6 +24,8 @@ export enum TokenType{
 
     SpeachMarks,
 
+    Break,
+
     Equals, // =
     Comma, // ,
     Dot,
@@ -50,6 +52,7 @@ const KEYWORDS: Record<string, TokenType> = {
     while: TokenType.While,
     else: TokenType.Else,
     elif: TokenType.Elif,
+    break: TokenType.Break,
 };
 
 export interface Token{
@@ -66,7 +69,7 @@ function isalpha(src: string){
 }
 
 function isskippable (str: string){
-    return str == ' ' || str == '\n' || str == '\t' || str == "\r";
+    return str == ' ' || str == '¬' || str == '\t' || str == "\r";
 }
 
 function isOp (str: string){
@@ -80,11 +83,23 @@ function isint(str: string){
 }
 
 export function tokenize (sourceCode: string): Token[]{
+    let skipCode = false;
     const tokens = new Array<Token>();
-    const src = sourceCode.split("");
+    const srcc = sourceCode.split("");
+    const src: string[] = srcc.map((str) => str.replace(/\n/g, '¬'));
 
     //continue reading and making tokens until the end of the file
     while (src.length > 0){
+        if(src[0] == "#"){
+            skipCode = true;
+        }
+        else if(src[0] == "¬"){
+            skipCode = false;
+        }
+        if(skipCode){
+            src.shift();
+            continue;
+        }
         if(src[0] == "("){
             tokens.push(token(src.shift(), TokenType.OpenBracket));
         }
